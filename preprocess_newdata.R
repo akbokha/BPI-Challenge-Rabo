@@ -79,7 +79,7 @@ workitem <- merge(workitem, scenarios_no_zeroes, by = "A_ID", all.x = TRUE, all.
 events <- rbind.fill(applicationEvents, offer)
 events <- rbind.fill(events, workitem)
 
-# write.table(applicationEvents, file = "application_events.csv", row.names = FALSE, sep=";")
-# write.table(offer, file = "offer_events.csv", row.names = FALSE, sep=";")
-# write.table(workitem, file = "workitem_events.csv", row.names = FALSE, sep=";")
-# write.table(events, file = "events.csv", row.names = FALSE, sep=";")
+# write.table(applicationEvents, file = "application_events.csv", row.names = FALSE, sep=";", na = "")
+# write.table(offer, file = "offer_events.csv", row.names = FALSE, sep=";", na = "")
+# write.table(workitem, file = "workitem_events.csv", row.names = FALSE, sep=";", na = "")
+# write.table(events, file = "events.csv", row.names = FALSE, sep=";", na = "")
