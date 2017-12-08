@@ -1,5 +1,5 @@
 # preprocessing new data 
-
+library(plyr)
 # The new data and the old event logs have different formats / use different definitions
 
 # old application event logs are in English and w/ prefix "A_", while new app event logs are in Dutch and w/o prefix
@@ -48,13 +48,38 @@ workitem["event"][workitem$WI_QUEUE_DESC ==  "Beoordelen fraude",] <- "W_Assess 
 # link the state and application data
 applicationEvents <- merge(application, state, by = "A_ID")
 
-# enrich application event data with the customer- , income-, scenario-, 
+# enrich application event data with the customer- , income-, scenario- and income-data
 applicants_no_duplicates <- applicants[!duplicated(applicants$A_ID),]
 length(unique(application$A_ID)) == nrow(applicants_no_duplicates) # check if there is customer data for all applications
 applicationEvents <- merge(applicationEvents, applicants_no_duplicates, by = "A_ID")
 
 scenarios_no_zeroes <- scenarios[apply(scenarios[c(3)], 1, function(z) any(z!=0)),]
-scenarios_no_zeroes <- applicants[!duplicated(applicants$A_ID),] # remove duplicates --> applicants with more than one application and different maxAmounts
-applicationEvens <- merge(applicationEvents, scenarios_no_zeroes, by = "A_ID", all.x = TRUE, all.y = FALSE)
+scenarios_no_zeroes <- scenarios_no_zeroes[!duplicated(scenarios_no_zeroes$A_ID),] # remove duplicates --> applicants with more than one application and different maxAmounts
+applicationEvents <- merge(applicationEvents, scenarios_no_zeroes, by = "A_ID", all.x = TRUE, all.y = FALSE)
 
-# enrich offer event data with customer data 
+# first: convert all salaries to yearsalaries --> this will faciliate a correct addition of the 13th month and the base salary
+incomes$INCOMEAMOUNT <- ifelse(incomes$INCOME_FREQ ==  "Maand", (incomes$INCOMEAMOUNT * 12), incomes$INCOMEAMOUNT)
+incomes$INCOMEAMOUNT <- ifelse(incomes$INCOME_FREQ ==  "4-Weken", (incomes$INCOMEAMOUNT * 13), incomes$INCOMEAMOUNT)
+incomes$INCOMEAMOUNT <- ifelse(incomes$INCOME_FREQ ==  "Week", (incomes$INCOMEAMOUNT * 52), incomes$INCOMEAMOUNT)
+#incomes$INCOME_PERSONS <- 1 # default value income: income is of 1 person
+incomes <- ddply(incomes, .(A_ID), summarize, INCOMEAMOUNT_YEAR = sum(INCOMEAMOUNT))
+applicationEvents <- merge(applicationEvents, incomes, by = "A_ID", all.x = TRUE, all.y = FALSE)
+
+# enrich offer event data with the customer- , income-, scenario- and income-data
+offer <- merge(offer, applicants_no_duplicates, by = "A_ID")
+offer <- merge(offer, incomes, by = "A_ID", all.x = TRUE, all.y = FALSE)
+offer <- merge(offer, scenarios_no_zeroes, by = "A_ID", all.x = TRUE, all.y = FALSE)
+
+# enrich workitem event data with the customer- , income-, scenario- and income-data
+workitem <- merge(workitem, applicants_no_duplicates, by = "A_ID")
+workitem <- merge(workitem, incomes, by = "A_ID", all.x = TRUE, all.y = FALSE)
+workitem <- merge(workitem, scenarios_no_zeroes, by = "A_ID", all.x = TRUE, all.y = FALSE)
+
+# make one dataframe for the application-, offer- and workitem-eventlog-data
+events <- rbind.fill(applicationEvents, offer)
+events <- rbind.fill(events, workitem)
+
+# write.table(applicationEvents, file = "application_events.csv", row.names = FALSE, sep=";")
+# write.table(offer, file = "offer_events.csv", row.names = FALSE, sep=";")
+# write.table(workitem, file = "workitem_events.csv", row.names = FALSE, sep=";")
+# write.table(events, file = "events.csv", row.names = FALSE, sep=";")
