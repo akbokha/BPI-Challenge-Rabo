@@ -4,3 +4,4 @@
 .Ruserdata
 /data/
 .ipynb_checkpoints
+**/tf_model/
