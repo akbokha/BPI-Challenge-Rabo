@@ -18,11 +18,10 @@ unique(applicationEventLogs$event)
 # make the definitions uniform
 state$event <- NA
 state["event"][state$AS_APPLICATIONSTATE_DESC == "Lopend",] <- "A_Pending"
-state["event"][state$AS_APPLICATIONSTATE_DESC == "Lopend",] <- "A_Pending"
 state["event"][state$AS_APPLICATIONSTATE_DESC == "Valideren",] <- "A_Validating"
 state["event"][state$AS_APPLICATIONSTATE_DESC == "Concept",] <- "A_Concept"
 state["event"][state$AS_APPLICATIONSTATE_DESC == "Ingediend",] <- "A_Submitted" 
-state["event"][state$AS_APPLICATIONSTATE_DESC == "Afgerond",] <- "A_Create Application"
+state["event"][state$AS_APPLICATIONSTATE_DESC == "Afgerond",] <- "A_Complete"
 state["event"][state$AS_APPLICATIONSTATE_DESC == "Incompleet",] <- "A_Incomplete" 
 state["event"][state$AS_APPLICATIONSTATE_DESC == "Geaccepteerd",] <- "A_Accepted"
 state["event"][state$AS_APPLICATIONSTATE_DESC == "Geannuleerd",] <- "A_Cancelled"
